@@ -141,6 +141,8 @@ jobs:
       release_title: ${{ inputs.release_title || github.event.inputs.release_title || 'RealKing Kernel' }}
       prerelease: ${{ inputs.prerelease || github.event.inputs.prerelease || false }}
       draft: ${{ inputs.draft || github.event.inputs.draft || false }}
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
       BUILD_START_TIME: ${{ github.run_started_at }}
     steps:
     - name: Checkout repository
