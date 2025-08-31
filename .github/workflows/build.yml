@@ -143,16 +143,43 @@ jobs:
       draft: ${{ inputs.draft || github.event.inputs.draft || false }}
       BUILD_START_TIME: ${{ github.run_started_at }}
     steps:
+    - name: Initialize Telegram Live Message
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: start
+        CURRENT_STAGE: Initializing
+        PROGRESS_PERCENT: 0
+      run: |
+        python3 telegram_notify.py
+
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 1
+
+    - name: Update Telegram - Cloning Source
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: update
+        CURRENT_STAGE: Cloning Source
+        PROGRESS_PERCENT: 10
+      run: |
+        python3 telegram_notify.py
 
     - name: Clone Kernel Source
       id: kernel-source
       run: |
         echo "Cloning branch $KERNEL_BRANCH"
         git clone --depth=1 --branch "$KERNEL_BRANCH" "$KERNEL_SOURCE_URL" Kernel
+
+    - name: Update Telegram - Processing Configs
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: update
+        CURRENT_STAGE: Processing Configs
+        PROGRESS_PERCENT: 20
+      run: |
+        python3 telegram_notify.py
 
     - name: Process Release Configs
       id: release-config
@@ -171,6 +198,15 @@ jobs:
         }' release_config.txt | sed "s/\\\$release_tag/$RELEASE_TAG/g" > final_release_notes.txt
 
         echo "✅ Release title and notes processed!"
+
+    - name: Update Telegram - Setting Up Environment
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: update
+        CURRENT_STAGE: Setting Up Environment
+        PROGRESS_PERCENT: 30
+      run: |
+        python3 telegram_notify.py
 
     - name: Selected Options
       id: print-options
@@ -286,6 +322,15 @@ jobs:
           echo "Done (KSU, MKSU, RKSU, Fork by backslashxx and SukiSU)"
         fi
 
+    - name: Update Telegram - Building Kernel
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: update
+        CURRENT_STAGE: Building Kernel
+        PROGRESS_PERCENT: 60
+      run: |
+        python3 telegram_notify.py
+
     - name: Build Kernel for ${{ matrix.rom_type }}
       id: build-kernel
       working-directory: Kernel
@@ -304,6 +349,15 @@ jobs:
         chmod +x ../build.sh
 
         bash ../build.sh
+
+    - name: Update Telegram - Finalizing
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: update
+        CURRENT_STAGE: Finalizing
+        PROGRESS_PERCENT: 90
+      run: |
+        python3 telegram_notify.py
 
     - name: Capture build outputs
       run: |
@@ -452,14 +506,12 @@ jobs:
           echo "ERROR_CODE=1" >> $GITHUB_ENV
         fi
 
-    - name: Send Telegram notification
+    - name: Finalize Telegram Notification
       if: always()
       env:
-        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-        TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-        BUILD_STATUS: ${{ env.BUILD_STATUS }}
-        ROM_TYPE: ${{ matrix.rom_type }}
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: end
+        BUILD_STATUS: ${{ job.status }}
         ZIP_PATH: ${{ env[format('ZIP_PATH_{0}', matrix.rom_type)] }}
       run: |
-        echo "📱 Sending Telegram notification for ${{ matrix.rom_type }}..."
         python3 telegram_notify.py
