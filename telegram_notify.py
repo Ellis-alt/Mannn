@@ -38,7 +38,7 @@ def sizeof_fmt(num, suffix="B"):
 def progress_bar(percent):
     filled = int(percent / 5)
     empty = 20 - filled
-    return f"[`{'█' * filled}{'░' * empty}`] ({percent:.1f}%)"
+    return f"[{'●' * filled}{'' * empty}] ({percent:.1f}%)"
 
 def get_elapsed_time():
     if not BUILD_START_TIME:
