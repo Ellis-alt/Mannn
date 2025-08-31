@@ -143,6 +143,11 @@ jobs:
       draft: ${{ inputs.draft || github.event.inputs.draft || false }}
       BUILD_START_TIME: ${{ github.run_started_at }}
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    
     - name: Initialize Telegram Live Message
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
@@ -151,11 +156,6 @@ jobs:
         PROGRESS_PERCENT: 0
       run: |
         python3 telegram_notify.py
-
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
 
     - name: Update Telegram - Cloning Source
       env:
