@@ -318,7 +318,7 @@ jobs:
           rm -rf KernelSU
           rm -rf KernelSU-Next
           echo "🔧 Setting up SukiSU Ultra with susfs..."
-          curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s bdf675b448b169ff6721e1af30b23b904d9757ae
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
           echo "Adding more manager support..."
           cp -rf "ksu_more_manager.patch" KernelSU && cd KernelSU && patch -p1 -f < "ksu_more_manager.patch" && cd ..
           echo "Done (KSU, MKSU, RKSU, Fork by backslashxx and SukiSU)"
