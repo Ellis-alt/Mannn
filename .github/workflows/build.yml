@@ -159,22 +159,20 @@ jobs:
       run: |
         python3 telegram_notify.py
 
-    - name: Update Telegram - Cloning Source
+    - name: Clone Kernel Source
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
-        CURRENT_STAGE: Cloning Source
+        CURRENT_STAGE: Cloning Kernel Source
         PROGRESS_PERCENT: 10
-      run: |
-        python3 telegram_notify.py
-
-    - name: Clone Kernel Source
       id: kernel-source
       run: |
+        python3 telegram_notify.py
         echo "Cloning branch $KERNEL_BRANCH"
         git clone --depth=1 --branch "$KERNEL_BRANCH" "$KERNEL_SOURCE_URL" Kernel
 
-    - name: Update Telegram - Processing Configs
+    - name: Process Release Configs
+      id: release-config
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
@@ -182,10 +180,6 @@ jobs:
         PROGRESS_PERCENT: 20
       run: |
         python3 telegram_notify.py
-
-    - name: Process Release Configs
-      id: release-config
-      run: |
         echo "📦 Processing release Config..."
         RELEASE_TAG="${{ env.release_tag }}"
 
@@ -201,17 +195,13 @@ jobs:
 
         echo "✅ Release title and notes processed!"
 
-    - name: Update Telegram - Setting Up Environment
+    - name: Selected Options
+      id: print-options
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
-        CURRENT_STAGE: Setting Up Environment
+        CURRENT_STAGE: Printing Selected Configs
         PROGRESS_PERCENT: 30
-      run: |
-        python3 telegram_notify.py
-
-    - name: Selected Options
-      id: print-options
       run: |
         echo "=============================================="
         echo "           BUILD CONFIGURATION"
@@ -242,8 +232,14 @@ jobs:
 
     - name: Set up environment
       id: setup-env
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: update
+        CURRENT_STAGE: Setting Up Environment
+        PROGRESS_PERCENT: 40
       working-directory: Kernel
       run: |
+        python3 telegram_notify.py
         echo "🛠️ Setting up build environment..."
         sudo apt-get update
         # Only install necessary packages (compliance)
@@ -324,21 +320,17 @@ jobs:
           echo "Done (KSU, MKSU, RKSU, Fork by backslashxx and SukiSU)"
         fi
 
-    - name: Update Telegram - Building Kernel
+    - name: Build Kernel for ${{ matrix.rom_type }}
+      id: build-kernel
+      working-directory: Kernel
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Building Kernel
         PROGRESS_PERCENT: 60
-      run: |
-        python3 telegram_notify.py
-
-    - name: Build Kernel for ${{ matrix.rom_type }}
-      id: build-kernel
-      working-directory: Kernel
-      env:
         GITHUB_OUTPUT: ${{ github.workspace }}/output_${{ matrix.rom_type }}.txt
       run: |
+        python3 telegram_notify.py
         echo "=============================================="
         echo "           BUILDING ${{ matrix.rom_type }} KERNEL"
         echo "=============================================="
@@ -352,17 +344,14 @@ jobs:
 
         bash ../build.sh
 
-    - name: Update Telegram - Finalizing
+    - name: Capture build outputs
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Finalizing
-        PROGRESS_PERCENT: 90
+        PROGRESS_PERCENT: 70
       run: |
         python3 telegram_notify.py
-
-    - name: Capture build outputs
-      run: |
         echo "📥 Capturing build outputs for ${{ matrix.rom_type }}..."
         if [ -f "${{ github.workspace }}/output_${{ matrix.rom_type }}.txt" ]; then
           cat "${{ github.workspace }}/output_${{ matrix.rom_type }}.txt" >> $GITHUB_OUTPUT
@@ -373,6 +362,11 @@ jobs:
 
     - name: Upload ${{ matrix.rom_type }} Artifact
       id: upload-artifact
+      env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        TELEGRAM_ACTION: update
+        CURRENT_STAGE: Uploading ${{ matrix.rom_type }} Artifact to Github
+        PROGRESS_PERCENT: 90
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
@@ -512,7 +506,7 @@ jobs:
       if: always()
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
-        TELEGRAM_ACTION: end
+        TELEGRAM_ACTION: 100
         BUILD_STATUS: ${{ job.status }}
         ZIP_PATH: ${{ env[format('ZIP_PATH_{0}', matrix.rom_type)] }}
       run: |
