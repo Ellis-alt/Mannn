@@ -23,7 +23,7 @@ BUILD_START_TIME = os.getenv("BUILD_START_TIME", "")
 ZIP_PATH = os.getenv("ZIP_PATH", "")
 
 # State management
-LIVE_MESSAGE_ID_FILE = "live_message_id.txt"
+LIVE_MESSAGE_ID_FILE = "/tmp/live_message_id.txt"
 
 def telegram_api(method):
     return f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/{method}"
