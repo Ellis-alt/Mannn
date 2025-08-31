@@ -103,6 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set.outputs.matrix }}
+      build start time: $ {{ steps.set.outputs.BUILD_START_TIME }}
     steps:
       - id: set
         run: |
@@ -147,7 +148,7 @@ jobs:
       draft: ${{ inputs.draft || github.event.inputs.draft || false }}
       TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-      BUILD_START_TIME: ${{ needs.set-matrix.outputs.BUILD_START_TIME }}
+      BUILD_START_TIME: ${{ needs.set-matrix.outputs.build_start_time }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
