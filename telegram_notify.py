@@ -19,7 +19,7 @@ ROM_TYPE = os.getenv("ROM_TYPE", "unknown")
 BUILD_STATUS = os.getenv("BUILD_STATUS", "in_progress")
 CURRENT_STAGE = os.getenv("CURRENT_STAGE", "Initializing")
 PROGRESS_PERCENT = os.getenv("PROGRESS_PERCENT", "0")
-#BUILD_START_TIME = os.getenv("BUILD_START_TIME", "")
+BUILD_START_TIME = os.getenv("BUILD_START_TIME", "")
 ZIP_PATH = os.getenv("ZIP_PATH", "")
 
 # State management
@@ -41,7 +41,7 @@ def progress_bar(percent):
     return f"[{'●' * filled}{'' * empty}] ({percent:.1f}%)"
 
 def get_elapsed_time():
-    build_start_time = os.getenv("BUILD_START_TIME", "")
+    # build_start_time = os.getenv("BUILD_START_TIME", "")
     
     if not build_start_time:
         return "0 mins 0 secs"
