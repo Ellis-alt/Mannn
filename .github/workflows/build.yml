@@ -234,13 +234,13 @@ jobs:
     - name: Set up environment
       id: setup-env
       env:
-        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        # ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Setting Up Environment
         PROGRESS_PERCENT: 40
       working-directory: Kernel
       run: |
-        python3 ../telegram_notify.py
+        python3 ${{ github.workspace }}/telegram_notify.py
         echo "🛠️ Setting up build environment..."
         sudo apt-get update
         # Only install necessary packages (compliance)
