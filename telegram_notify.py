@@ -11,13 +11,20 @@ GITHUB_SERVER_URL = "https://github.com"
 GITHUB_SHA = os.getenv("GITHUB_SHA", "")[:7]
 BRANCH = os.getenv("KERNEL_BRANCH", "unknown")
 ROM_TYPE = os.getenv("ROM_TYPE", "unknown")
-STATUS = os.getenv("BUILD_STATUS", "failure")
 KERNEL_SOURCE_URL = os.getenv("KERNEL_SOURCE_URL", "")
 ZIP_PATH = os.getenv("ZIP_PATH", "")
-TIME_NOW = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+BUILD_STATUS = os.getenv("BUILD_STATUS", "in_progress")
+BUILD_START = time.time()
+RUN_ID = os.getenv("GITHUB_RUN_ID", "unknown")
+WORKFLOW_NAME = os.getenv("GITHUB_WORKFLOW", "Build Kernel")
+STEP_NAME = os.getenv("CURRENT_STAGE", "Initializing")
+
+LIVE_MESSAGE_ID_PATH = "live_message_id.txt"
+
 
 def telegram_api(method):
     return f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/{method}"
+
 
 def sizeof_fmt(num, suffix="B"):
     for unit in ["", "K", "M", "G", "T"]:
@@ -26,111 +33,168 @@ def sizeof_fmt(num, suffix="B"):
         num /= 1024.0
     return f"{num:.1f}P{suffix}"
 
-def format_status_message():
-    status_icon = "✅" if STATUS == "success" else "❌"
-    title = "Build Successful" if STATUS == "success" else "Build Failed"
-    
-    return f"""{status_icon} *{title} - {ROM_TYPE}*
 
-*Build Name:* Kernel Compilation
-*Initiated By:* {GITHUB_ACTOR}
-*Machine:* GitHub Actions Runner
-*Build ID:* {os.getenv("GITHUB_RUN_ID", "unknown")}
-*Repository:* [{GITHUB_REPO}]({GITHUB_SERVER_URL}/{GITHUB_REPO})
-*Branch:* `{BRANCH}`
-*Kernel Source:* [Realking_Kernel]({KERNEL_SOURCE_URL})
-
-*Status:* {status_icon} {STATUS.capitalize()}
-
-🕒 *Time:* {TIME_NOW}
-""".strip()
-
-def send_text_message(text, parse_mode="Markdown"):
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": text,
-        "parse_mode": parse_mode,
-        "disable_web_page_preview": True
-    }
-    response = requests.post(telegram_api("sendMessage"), json=payload)
-    return response.json().get("result", {}).get("message_id")
-
-def edit_text_message(message_id, text, parse_mode="Markdown"):
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "message_id": message_id,
-        "text": text,
-        "parse_mode": parse_mode,
-        "disable_web_page_preview": True
-    }
-    requests.post(telegram_api("editMessageText"), json=payload)
-
-def delete_message(message_id):
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "message_id": message_id,
-    }
-    requests.post(telegram_api("deleteMessage"), json=payload)
-
-def simulate_progress_bar(percent, size_sent, size_total):
+def progress_bar(percent):
     filled = int(percent / 5)
     empty = 20 - filled
-    return f"*Progress:* [`{'█' * filled}{'░' * empty}`] ({percent:.1f}% | {sizeof_fmt(size_sent)}/{sizeof_fmt(size_total)})"
+    return f"[`{'█' * filled}{'░' * empty}`] ({percent:.1f}%)"
+
+
+def get_elapsed_time():
+    elapsed = int(time.time() - BUILD_START)
+    mins, secs = divmod(elapsed, 60)
+    return f"{mins} mins {secs} secs"
+
+
+def build_live_message(stage="Starting", percent=0):
+    title = f"🚀 *Live Build Progress - {ROM_TYPE}*"
+    repo_url = f"{GITHUB_SERVER_URL}/{GITHUB_REPO}"
+    branch_url = f"{repo_url}/tree/{BRANCH}"
+
+    message = f"""{title}
+
+*Workflow:* {WORKFLOW_NAME}
+*Initiated By:* {GITHUB_ACTOR}
+*Build ID:* `{RUN_ID}`
+*Repository:* [{GITHUB_REPO}]({repo_url})
+*Branch:* [`{BRANCH}`]({branch_url})
+*Kernel Source:* [Link]({KERNEL_SOURCE_URL})
+
+*Progress:* {progress_bar(percent)}
+*Stage:* `{stage}`
+*Build Time:* {get_elapsed_time()}
+"""
+    return message
+
+
+def send_initial_message():
+    message = build_live_message()
+    response = requests.post(telegram_api("sendMessage"), json={
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "Markdown",
+        "disable_web_page_preview": True
+    })
+
+    message_id = response.json().get("result", {}).get("message_id")
+    if message_id:
+        with open(LIVE_MESSAGE_ID_PATH, "w") as f:
+            f.write(str(message_id))
+
+
+def update_live_message(stage, percent):
+    try:
+        with open(LIVE_MESSAGE_ID_PATH) as f:
+            message_id = int(f.read())
+    except FileNotFoundError:
+        return
+
+    message = build_live_message(stage, percent)
+    requests.post(telegram_api("editMessageText"), json={
+        "chat_id": TELEGRAM_CHAT_ID,
+        "message_id": message_id,
+        "text": message,
+        "parse_mode": "Markdown",
+        "disable_web_page_preview": True
+    })
+
+
+def delete_live_message():
+    try:
+        with open(LIVE_MESSAGE_ID_PATH) as f:
+            message_id = int(f.read())
+        requests.post(telegram_api("deleteMessage"), json={
+            "chat_id": TELEGRAM_CHAT_ID,
+            "message_id": message_id,
+        })
+    except FileNotFoundError:
+        pass
+
+
+def send_final_message(status):
+    title_icon = "✅" if status == "success" else "❌"
+    title = f"{title_icon} *Build {'Success' if status == 'success' else 'Failed'} - {ROM_TYPE}*"
+    repo_url = f"{GITHUB_SERVER_URL}/{GITHUB_REPO}"
+    branch_url = f"{repo_url}/tree/{BRANCH}"
+
+    message = f"""{title}
+
+*Workflow:* {WORKFLOW_NAME}
+*Initiated By:* {GITHUB_ACTOR}
+*Build ID:* `{RUN_ID}`
+*Repository:* [{GITHUB_REPO}]({repo_url})
+*Branch:* [`{BRANCH}`]({branch_url})
+*Kernel Source:* [Link]({KERNEL_SOURCE_URL})
+
+*Build Time:* {get_elapsed_time()}
+"""
+    requests.post(telegram_api("sendMessage"), json={
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "Markdown",
+        "disable_web_page_preview": True
+    })
+
 
 def upload_file_with_progress(file_path):
     if not os.path.exists(file_path):
-        return None
+        return False
 
     file_size = os.path.getsize(file_path)
     filename = os.path.basename(file_path)
 
-    # Send initial upload message
-    upload_msg = f"""📦 *Uploading File*
+    msg = f"""📦 *Uploading File*
 *Name:* `{filename}`
 *Size:* {sizeof_fmt(file_size)}
 *Status:* Uploading...
 """
-    message_id = send_text_message(upload_msg)
+    r = requests.post(telegram_api("sendMessage"), json={
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": msg,
+        "parse_mode": "Markdown"
+    })
+    msg_id = r.json().get("result", {}).get("message_id")
 
-    # Simulate progress (we can't get real upload progress with Telegram API)
     for progress in range(0, 101, 10):
-        progress_text = simulate_progress_bar(progress, (progress/100)*file_size, file_size)
-        edit_text_message(message_id, upload_msg + "\n" + progress_text)
+        prog_bar = progress_bar(progress)
+        updated_msg = msg + f"\n*Progress:* {prog_bar}"
+        requests.post(telegram_api("editMessageText"), json={
+            "chat_id": TELEGRAM_CHAT_ID,
+            "message_id": msg_id,
+            "text": updated_msg,
+            "parse_mode": "Markdown"
+        })
         time.sleep(0.3)
 
-    # Actually upload the file
     with open(file_path, "rb") as f:
-        response = requests.post(
-            telegram_api("sendDocument"),
-            data={"chat_id": TELEGRAM_CHAT_ID, "caption": f"📦 {filename}"},
-            files={"document": (filename, f)},
-        )
-    
-    if response.status_code == 200:
-        # Update to show uploaded status briefly, then delete
-        uploaded_msg = upload_msg.replace("Uploading...", "✅ Uploaded")
-        edit_text_message(message_id, uploaded_msg)
-        time.sleep(2)
-        delete_message(message_id)
-        return True
-    else:
-        # If upload failed, show error
-        error_msg = upload_msg.replace("Uploading...", "❌ Upload Failed")
-        edit_text_message(message_id, error_msg)
-        return False
+        requests.post(telegram_api("sendDocument"), data={
+            "chat_id": TELEGRAM_CHAT_ID,
+            "caption": f"📦 `{filename}`",
+            "parse_mode": "Markdown"
+        }, files={"document": (filename, f)})
+
+    time.sleep(2)
+    requests.post(telegram_api("deleteMessage"), json={
+        "chat_id": TELEGRAM_CHAT_ID,
+        "message_id": msg_id
+    })
+
 
 def main():
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("Telegram credentials not set, skipping notification")
-        return
+    action = os.getenv("TELEGRAM_ACTION", "start")
+    stage = os.getenv("CURRENT_STAGE", "Initializing")
+    progress = float(os.getenv("PROGRESS", "0"))
 
-    # Send main status message
-    status_message = format_status_message()
-    send_text_message(status_message)
+    if action == "start":
+        send_initial_message()
+    elif action == "update":
+        update_live_message(stage, progress)
+    elif action == "end":
+        delete_live_message()
+        send_final_message(BUILD_STATUS)
+        if BUILD_STATUS == "success" and ZIP_PATH and os.path.exists(ZIP_PATH):
+            upload_file_with_progress(ZIP_PATH)
 
-    # Only upload files if build was successful
-    if STATUS.lower() == "success" and ZIP_PATH and os.path.exists(ZIP_PATH):
-        upload_file_with_progress(ZIP_PATH)
 
 if __name__ == "__main__":
     main()
