@@ -43,7 +43,7 @@ def progress_bar(percent):
 def get_elapsed_time():
     # build_start_time = os.getenv("BUILD_START_TIME", "")
     
-    if not build_start_time:
+    if not BUILD_START_TIME:
         return "0 mins 0 secs"
     
     try:
