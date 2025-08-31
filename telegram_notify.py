@@ -48,7 +48,7 @@ def get_elapsed_time():
     
     try:
         # Parse ISO 8601 time (e.g., 2025-08-31T14:22:53+00:00)
-        start_time = datetime.fromisoformat(build_start_time.replace('Z', '+00:00'))
+        start_time = datetime.fromisoformat(BUILD_START_TIME.replace('Z', '+00:00'))
         current_time = datetime.now().astimezone()
         
         elapsed = current_time - start_time
