@@ -110,7 +110,6 @@ jobs:
           BUILD_START_TIME=$(date --iso-8601=seconds)
           echo "BUILD_START_TIME=$BUILD_START_TIME" >> $GITHUB_ENV
           echo "BUILD_START_TIME=$BUILD_START_TIME" >> $GITHUB_OUTPUT
-          echo "BUILD_START_TIME: $BUILD_START_TIME"
           ROM="${{ github.event.inputs.ROM }}"
           echo "Input ROM: '$ROM'"
 
