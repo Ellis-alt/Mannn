@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set.outputs.matrix }}
-      build start time: $ {{ steps.set.outputs.BUILD_START_TIME }}
+      build_start_time: ${{ steps.set.outputs.BUILD_START_TIME }}
     steps:
       - id: set
         run: |
