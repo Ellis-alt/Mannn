@@ -19,7 +19,7 @@ ROM_TYPE = os.getenv("ROM_TYPE", "unknown")
 BUILD_STATUS = os.getenv("BUILD_STATUS", "in_progress")
 CURRENT_STAGE = os.getenv("CURRENT_STAGE", "Initializing")
 PROGRESS_PERCENT = os.getenv("PROGRESS_PERCENT", "0")
-BUILD_START_TIME = os.getenv("BUILD_START_TIME", "")
+#BUILD_START_TIME = os.getenv("BUILD_START_TIME", "")
 ZIP_PATH = os.getenv("ZIP_PATH", "")
 
 # State management
@@ -41,19 +41,19 @@ def progress_bar(percent):
     return f"[{'●' * filled}{'' * empty}] ({percent:.1f}%)"
 
 def get_elapsed_time():
-    if not BUILD_START_TIME:
+    build_start_time = os.getenv("BUILD_START_TIME", "")
+    
+    if not build_start_time:
         return "0 mins 0 secs"
     
     try:
-        # Parse the start time from GitHub format
-        start_time = datetime.fromisoformat(BUILD_START_TIME.replace('Z', '+00:00'))
+        # Parse ISO 8601 time (e.g., 2025-08-31T14:22:53+00:00)
+        start_time = datetime.fromisoformat(build_start_time.replace('Z', '+00:00'))
         current_time = datetime.now().astimezone()
         
-        # Calculate elapsed time
         elapsed = current_time - start_time
         total_seconds = int(elapsed.total_seconds())
         
-        # Format the time
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
