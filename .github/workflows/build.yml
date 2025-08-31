@@ -326,7 +326,7 @@ jobs:
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
-        CURRENT_STAGE: Building Kernel
+        CURRENT_STAGE: Building ${{ matrix.rom_type }} Kernel
         PROGRESS_PERCENT: 60
         GITHUB_OUTPUT: ${{ github.workspace }}/output_${{ matrix.rom_type }}.txt
       run: |
@@ -349,7 +349,7 @@ jobs:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Finalizing
-        PROGRESS_PERCENT: 70
+        PROGRESS_PERCENT: 80
       run: |
         python3 telegram_notify.py
         echo "📥 Capturing build outputs for ${{ matrix.rom_type }}..."
@@ -465,6 +465,9 @@ jobs:
 
     - name: Set build status for Telegram
       id: set-telegram-status
+      env:
+        TELEGRAM_ACTION: update
+        PROGRESS_PERCENT: 100
       if: always()
       run: |
         if [[ "${{ job.status }}" == "success" ]]; then
@@ -506,7 +509,7 @@ jobs:
       if: always()
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
-        TELEGRAM_ACTION: 100
+        TELEGRAM_ACTION: end
         BUILD_STATUS: ${{ job.status }}
         ZIP_PATH: ${{ env[format('ZIP_PATH_{0}', matrix.rom_type)] }}
       run: |
