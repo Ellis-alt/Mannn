@@ -41,14 +41,17 @@ def progress_bar(percent):
     return f"[{'●' * filled}{'' * empty}] ({percent:.1f}%)"
 
 def get_elapsed_time():
-    # build_start_time = os.getenv("BUILD_START_TIME", "")
-    
     if not BUILD_START_TIME:
         return "0 mins 0 secs"
     
     try:
-        # Parse ISO 8601 time (e.g., 2025-08-31T14:22:53+00:00)
-        start_time = datetime.fromisoformat(BUILD_START_TIME.replace('Z', '+00:00'))
+        # Handle different time formats from GitHub Actions
+        time_str = BUILD_START_TIME
+        if 'Z' in time_str:
+            time_str = time_str.replace('Z', '+00:00')
+        
+        # Parse ISO 8601 time
+        start_time = datetime.fromisoformat(time_str)
         current_time = datetime.now().astimezone()
         
         elapsed = current_time - start_time
@@ -67,6 +70,7 @@ def get_elapsed_time():
             
     except Exception as e:
         print(f"Error calculating elapsed time: {e}")
+        print(f"Time string: {BUILD_START_TIME}")
         return "Unknown"
 
 def build_live_message():
