@@ -45,11 +45,15 @@ def get_elapsed_time():
         return "0 mins 0 secs"
     
     try:
-        start_time_str = BUILD_START_TIME.replace('Z', '+00:00')
-        start_time = datetime.fromisoformat(start_time_str)
+        # Parse the start time from GitHub format
+        start_time = datetime.fromisoformat(BUILD_START_TIME.replace('Z', '+00:00'))
         current_time = datetime.now().astimezone()
+        
+        # Calculate elapsed time
         elapsed = current_time - start_time
         total_seconds = int(elapsed.total_seconds())
+        
+        # Format the time
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
