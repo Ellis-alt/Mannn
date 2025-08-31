@@ -106,6 +106,7 @@ jobs:
     steps:
       - id: set
         run: |
+          echo "BUILD_START_TIME=$(date --iso-8601=seconds)" >> $GITHUB_ENV
           ROM="${{ github.event.inputs.ROM }}"
           echo "Input ROM: '$ROM'"
 
