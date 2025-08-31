@@ -198,11 +198,12 @@ jobs:
     - name: Selected Options
       id: print-options
       env:
-        # ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Printing Selected Configs
         PROGRESS_PERCENT: 30
       run: |
+        python3 telegram_notify.py
         echo "=============================================="
         echo "           BUILD CONFIGURATION"
         echo "=============================================="
@@ -359,14 +360,16 @@ jobs:
         else
           echo "⚠️ No output file found for ${{ matrix.rom_type }}"
         fi
-
-    - name: Upload ${{ matrix.rom_type }} Artifact
-      id: upload-artifact
+    - name: Upload to files to Github Artifacts
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Uploading ${{ matrix.rom_type }} Artifact to Github
         PROGRESS_PERCENT: 90
+      run: python3 telegram_notify.py
+
+    - name: Upload ${{ matrix.rom_type }} Artifact
+      id: upload-artifact
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
@@ -472,6 +475,7 @@ jobs:
         PROGRESS_PERCENT: 100
       if: always()
       run: |
+        python3 telegram_notify.py
         if [[ "${{ job.status }}" == "success" ]]; then
           echo "BUILD_STATUS=success" >> $GITHUB_ENV
         else
