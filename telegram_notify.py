@@ -45,12 +45,24 @@ def get_elapsed_time():
         return "0 mins 0 secs"
     
     try:
-        start_time = datetime.fromisoformat(BUILD_START_TIME.replace('Z', '+00:00'))
-        elapsed = datetime.now().astimezone() - start_time
-        mins = elapsed.seconds // 60
-        secs = elapsed.seconds % 60
-        return f"{mins} mins {secs} secs"
-    except:
+        start_time_str = BUILD_START_TIME.replace('Z', '+00:00')
+        start_time = datetime.fromisoformat(start_time_str)
+        current_time = datetime.now().astimezone()
+        elapsed = current_time - start_time
+        total_seconds = int(elapsed.total_seconds())
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        
+        if hours > 0:
+            return f"{hours} hrs {minutes} mins {seconds} secs"
+        elif minutes > 0:
+            return f"{minutes} mins {seconds} secs"
+        else:
+            return f"{seconds} secs"
+            
+    except Exception as e:
+        print(f"Error calculating elapsed time: {e}")
         return "Unknown"
 
 def build_live_message():
