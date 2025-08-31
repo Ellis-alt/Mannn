@@ -239,7 +239,7 @@ jobs:
         PROGRESS_PERCENT: 40
       working-directory: Kernel
       run: |
-        python3 telegram_notify.py
+        python3 ../telegram_notify.py
         echo "🛠️ Setting up build environment..."
         sudo apt-get update
         # Only install necessary packages (compliance)
@@ -330,7 +330,7 @@ jobs:
         PROGRESS_PERCENT: 60
         GITHUB_OUTPUT: ${{ github.workspace }}/output_${{ matrix.rom_type }}.txt
       run: |
-        python3 telegram_notify.py
+        python3 ../telegram_notify.py
         echo "=============================================="
         echo "           BUILDING ${{ matrix.rom_type }} KERNEL"
         echo "=============================================="
