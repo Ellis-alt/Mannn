@@ -348,7 +348,7 @@ jobs:
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
-        CURRENT_STAGE: Finalizing
+        CURRENT_STAGE: Capture build status
         PROGRESS_PERCENT: 80
       run: |
         python3 telegram_notify.py
@@ -466,7 +466,9 @@ jobs:
     - name: Set build status for Telegram
       id: set-telegram-status
       env:
+        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
+        CURRENT_STAGE: Completed
         PROGRESS_PERCENT: 100
       if: always()
       run: |
