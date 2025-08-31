@@ -143,7 +143,6 @@ jobs:
       draft: ${{ inputs.draft || github.event.inputs.draft || false }}
       TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-      BUILD_START_TIME: ${{ github.run_started_at }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -152,6 +151,7 @@ jobs:
     
     - name: Initialize Telegram Live Message
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: start
         CURRENT_STAGE: Initializing
@@ -161,6 +161,7 @@ jobs:
 
     - name: Clone Kernel Source
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Cloning Kernel Source
@@ -174,6 +175,7 @@ jobs:
     - name: Process Release Configs
       id: release-config
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Processing Configs
@@ -198,6 +200,7 @@ jobs:
     - name: Selected Options
       id: print-options
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Printing Selected Configs
@@ -234,6 +237,7 @@ jobs:
     - name: Set up environment
       id: setup-env
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Setting Up Environment
@@ -325,6 +329,7 @@ jobs:
       id: build-kernel
       working-directory: Kernel
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Building ${{ matrix.rom_type }} Kernel
@@ -347,6 +352,7 @@ jobs:
 
     - name: Capture build outputs
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Capture build status
@@ -360,8 +366,10 @@ jobs:
         else
           echo "⚠️ No output file found for ${{ matrix.rom_type }}"
         fi
+        
     - name: Upload to files to Github Artifacts
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Uploading ${{ matrix.rom_type }} Artifact to Github
@@ -382,6 +390,7 @@ jobs:
       id: build-github-release
       if: ${{ always() && env.use_release == 'true' && (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') }}
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         echo "=============================================="
@@ -469,6 +478,7 @@ jobs:
     - name: Set build status for Telegram
       id: set-telegram-status
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Completed
@@ -514,6 +524,7 @@ jobs:
     - name: Finalize Telegram Notification
       if: always()
       env:
+        BUILD_START_TIME: ${{ github.run_started_at }}
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: end
         BUILD_STATUS: ${{ job.status }}
