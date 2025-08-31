@@ -198,7 +198,7 @@ jobs:
     - name: Selected Options
       id: print-options
       env:
-        ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
+        # ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Printing Selected Configs
         PROGRESS_PERCENT: 30
