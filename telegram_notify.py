@@ -75,7 +75,7 @@ def get_elapsed_time():
 
 def build_live_message():
     # Determine title based on ROM type
-    if ROM_TYPE == "":
+    if ROM_TYPE == "AOSP+MIUI":
         title = f"🚀 Live Build Progress - AOSP+MIUI"
     else:
         title = f"🚀 Live Build Progress - {ROM_TYPE}"
@@ -102,7 +102,7 @@ def build_final_message(status):
     title_icon = "✅" if status == "success" else "❌"
     status_text = "Success" if status == "success" else "Failed"
     
-    if ROM_TYPE == "":
+    if ROM_TYPE == "AOSP+MIUI":
         title = f"{title_icon} Build {status_text} - AOSP+MIUI"
     else:
         title = f"{title_icon} Build {status_text} - {ROM_TYPE}"
