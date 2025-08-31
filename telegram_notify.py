@@ -61,7 +61,7 @@ def build_live_message():
         title = f"🚀 Live Build Progress - {ROM_TYPE}"
     
     repo_url = f"{GITHUB_SERVER_URL}/{GITHUB_REPO}"
-    branch_url = f"{repo_url}/tree/{KERNEL_BRANCH}"
+    branch_url = f"{KERNEL_SOURCE_URL}/tree/{KERNEL_BRANCH}"
     
     message = f"""{title}
 
@@ -69,7 +69,7 @@ def build_live_message():
 *Initiated By:* {GITHUB_ACTOR}
 *Build ID:* `{GITHUB_RUN_ID}`
 *Repository:* [{GITHUB_REPO}]({repo_url})
-*Branch:* [`{KERNEL_BRANCH}`]({branch_url})
+*Branch:* [{KERNEL_BRANCH}]({branch_url})
 *Kernel Source:* [Link]({KERNEL_SOURCE_URL})
 
 *Progress:* {progress_bar(float(PROGRESS_PERCENT))}
