@@ -108,7 +108,8 @@ jobs:
         run: |
           BUILD_START_TIME=$(date --iso-8601=seconds)
           echo "BUILD_START_TIME=$BUILD_START_TIME" >> $GITHUB_ENV
-          echo "build_start_time=$BUILD_START_TIME" >> $GITHUB_OUTPUT
+          echo "BUILD_START_TIME=$BUILD_START_TIME" >> $GITHUB_OUTPUT
+          echo "BUILD_START_TIME: $BUILD_START_TIME"
           ROM="${{ github.event.inputs.ROM }}"
           echo "Input ROM: '$ROM'"
 
@@ -146,7 +147,7 @@ jobs:
       draft: ${{ inputs.draft || github.event.inputs.draft || false }}
       TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-      BUILD_START_TIME: ${{ needs.set-matrix.outputs.build_start_time }}
+      BUILD_START_TIME: ${{ needs.set-matrix.outputs.BUILD_START_TIME }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -160,6 +161,7 @@ jobs:
         CURRENT_STAGE: Initializing
         PROGRESS_PERCENT: 0
       run: |
+        echo "BUILD_START_TIME: $BUILD_START_TIME"
         python3 telegram_notify.py
 
     - name: Clone Kernel Source
