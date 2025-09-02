@@ -192,7 +192,7 @@ def upload_file_with_progress(file_path):
         )
     
     if response.status_code == 200:
-        # Update status and the delete
+        # Update status and then delete
         uploaded_msg = upload_msg.replace("Uploading...", "✅ Uploaded")
         edit_message(message_id, uploaded_msg)
         time.sleep(2)
