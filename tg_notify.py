@@ -169,7 +169,6 @@ def upload_file_with_progress(file_path):
     file_size = os.path.getsize(file_path)
     filename = os.path.basename(file_path)
 
-    # Send initial upload message
     upload_msg = f"""📦 *Uploading File*
 *Name:* `{filename}`
 *Size:* {sizeof_fmt(file_size)}
@@ -177,7 +176,7 @@ def upload_file_with_progress(file_path):
 """
     message_id = send_message(upload_msg)
 
-    # Simulate progress (we can't get real upload progress with Telegram API)
+    # Simulate progress
     for progress in range(0, 101, 10):
         progress_text = f"*Progress:* {progress_bar(progress)}"
         updated_msg = upload_msg + "\n" + progress_text
@@ -193,14 +192,13 @@ def upload_file_with_progress(file_path):
         )
     
     if response.status_code == 200:
-        # Update to show uploaded status briefly, then delete
+        # Update status and the delete
         uploaded_msg = upload_msg.replace("Uploading...", "✅ Uploaded")
         edit_message(message_id, uploaded_msg)
         time.sleep(2)
         delete_message(message_id)
         return True
     else:
-        # If upload failed, show error
         error_msg = upload_msg.replace("Uploading...", "❌ Upload Failed")
         edit_message(message_id, error_msg)
         return False
@@ -232,14 +230,12 @@ def main():
                 if message_id:
                     save_message_id(message_id)
         else:
-            # No existing message, send a new one
             message = build_live_message()
             message_id = send_message(message)
             if message_id:
                 save_message_id(message_id)
     
     elif action == "end":
-        # Finalize - send final message and delete live message
         message_id = load_message_id()
         if message_id:
             delete_message(message_id)
