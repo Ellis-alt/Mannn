@@ -227,12 +227,6 @@ jobs:
         echo "📃 Draft: $draft"
         echo ""
 
-        # if [[ "$kpm" == "true" ]]; then
-        #   echo "🔐 SukiSU + Kernel Patch Manager ENABLED"
-        # else
-        #   echo "🔐 SukiSU + Kernel Patch Manager DISABLED"
-        # fi
-
         echo "🔐 SukiSU + Kernel Patch Manager $( [[ "$kpm" == "true" ]] && echo ENABLED || echo DISABLED )"
 
     - name: Set up environment
@@ -309,7 +303,8 @@ jobs:
         echo "✅ ${{ env.clang }} Clang downloaded and extracted successfully"
 
         echo "Settingup Kernel Manager"
-        bash managerpatch.sh
+        bash nextpatch.sh
+        # bash managerpatch.sh
 
     - name: Build Kernel for ${{ matrix.rom_type }}
       id: build-kernel
