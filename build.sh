@@ -1,7 +1,6 @@
 #!/bin/bash
 set -eo pipefail
 
-# Use the exported ROM_TYPE instead of $1
 if [[ -z "$ROM_TYPE" ]]; then
   echo "❌ ROM_TYPE environment variable not set!"
   exit 1
@@ -20,7 +19,7 @@ ZIMAGE_DIR="${OUT_DIR}/arch/arm64/boot"
 KERNEL_DEFCONFIG="munch_defconfig"
 BUILD_START=$(date +"%s")
 
-# Debugging - keep as is
+# Debugging
 echo "🔧 ROM Type: $ROM_TYPE"
 echo "🔧 KPM: $kpm"
 echo "🔧 ZIP_NAME_BASE: $ZIP_NAME_BASE"
