@@ -162,7 +162,7 @@ jobs:
         PROGRESS_PERCENT: 0
       run: |
         echo "BUILD_START_TIME: $BUILD_START_TIME"
-        python3 telegram_notify.py
+        python3 tg_notify.py
 
     - name: Clone Kernel Source
       env:
@@ -172,7 +172,7 @@ jobs:
         PROGRESS_PERCENT: 10
       id: kernel-source
       run: |
-        python3 telegram_notify.py
+        python3 tg_notify.py
         echo "Cloning branch $KERNEL_BRANCH"
         git clone --depth=1 --branch "$KERNEL_BRANCH" "$KERNEL_SOURCE_URL" Kernel
 
@@ -184,7 +184,7 @@ jobs:
         CURRENT_STAGE: Processing Configs
         PROGRESS_PERCENT: 20
       run: |
-        python3 telegram_notify.py
+        python3 tg_notify.py
         echo "📦 Processing release Config..."
         RELEASE_TAG="${{ env.release_tag }}"
 
@@ -208,7 +208,7 @@ jobs:
         CURRENT_STAGE: Printing Selected Configs
         PROGRESS_PERCENT: 30
       run: |
-        python3 telegram_notify.py
+        python3 tg_notify.py
         echo "=============================================="
         echo "           BUILD CONFIGURATION"
         echo "=============================================="
@@ -227,14 +227,13 @@ jobs:
         echo "📃 Draft: $draft"
         echo ""
 
-        # Show what will be built based on matrix
-        echo "🚀 Building ROM type: ${{ matrix.rom_type }}"
+        # if [[ "$kpm" == "true" ]]; then
+        #   echo "🔐 SukiSU + Kernel Patch Manager ENABLED"
+        # else
+        #   echo "🔐 SukiSU + Kernel Patch Manager DISABLED"
+        # fi
 
-        if [[ "$kpm" == "true" ]]; then
-          echo "🔐 SukiSU + Kernel Patch Manager ENABLED"
-        else
-          echo "🔐 SukiSU + Kernel Patch Manager DISABLED"
-        fi
+        echo "🔐 SukiSU + Kernel Patch Manager $( [[ "$kpm" == "true" ]] && echo ENABLED || echo DISABLED )"
 
     - name: Set up environment
       id: setup-env
@@ -245,13 +244,10 @@ jobs:
         PROGRESS_PERCENT: 40
       working-directory: Kernel
       run: |
-        python3 ${{ github.workspace }}/telegram_notify.py
+        python3 ${{ github.workspace }}/tg_notify.py
         echo "🛠️ Setting up build environment..."
         sudo apt-get update
-        # Only install necessary packages (compliance)
         sudo apt-get install -y --install-recommends jq python3 software-properties-common build-essential libelf-dev libhiredis1.1.0
-
-        chmod +x ../telegram_notify.py
 
         # Setup time variables
         TIME="$(date "+%Y%m%d%H%M")"
@@ -312,14 +308,8 @@ jobs:
 
         echo "✅ ${{ env.clang }} Clang downloaded and extracted successfully"
 
-        if [[ "${{ env.kpm }}" == "false" ]]; then
-          echo "🔧 Setting up KernelSU-Next with susfs..."
-          bash nextpatch.sh
-          bash managerpatch.sh
-          echo "✅ KernelSU-Next setup completed"
-        else
-          bash managerpatch.sh
-        fi
+        echo "Settingup Kernel Manager"
+        bash managerpatch.sh
 
     - name: Build Kernel for ${{ matrix.rom_type }}
       id: build-kernel
@@ -331,7 +321,7 @@ jobs:
         PROGRESS_PERCENT: 60
         GITHUB_OUTPUT: ${{ github.workspace }}/output_${{ matrix.rom_type }}.txt
       run: |
-        python3 ${{ github.workspace }}/telegram_notify.py
+        python3 ${{ github.workspace }}/tg_notify.py
         echo "=============================================="
         echo "           BUILDING ${{ matrix.rom_type }} KERNEL"
         echo "=============================================="
@@ -352,7 +342,7 @@ jobs:
         CURRENT_STAGE: Capturing build status
         PROGRESS_PERCENT: 80
       run: |
-        python3 telegram_notify.py
+        python3 tg_notify.py
         echo "📥 Capturing build outputs for ${{ matrix.rom_type }}..."
         if [ -f "${{ github.workspace }}/output_${{ matrix.rom_type }}.txt" ]; then
           cat "${{ github.workspace }}/output_${{ matrix.rom_type }}.txt" >> $GITHUB_OUTPUT
@@ -367,7 +357,7 @@ jobs:
         TELEGRAM_ACTION: update
         CURRENT_STAGE: Uploading ${{ matrix.rom_type }} Artifact to Github
         PROGRESS_PERCENT: 90
-      run: python3 telegram_notify.py
+      run: python3 tg_notify.py
 
     - name: Upload ${{ matrix.rom_type }} Artifact
       id: upload-artifact
@@ -476,7 +466,7 @@ jobs:
         PROGRESS_PERCENT: 100
       if: always()
       run: |
-        python3 telegram_notify.py
+        python3 tg_notify.py
         if [[ "${{ job.status }}" == "success" ]]; then
           echo "BUILD_STATUS=success" >> $GITHUB_ENV
         else
@@ -520,4 +510,4 @@ jobs:
         BUILD_STATUS: ${{ job.status }}
         ZIP_PATH: ${{ env[format('ZIP_PATH_{0}', matrix.rom_type)] }}
       run: |
-        python3 telegram_notify.py
+        python3 tg_notify.py
