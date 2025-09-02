@@ -315,15 +315,10 @@ jobs:
         if [[ "${{ env.kpm }}" == "false" ]]; then
           echo "🔧 Setting up KernelSU-Next with susfs..."
           bash nextpatch.sh
+          bash managerpatch.sh
           echo "✅ KernelSU-Next setup completed"
         else
-          rm -rf KernelSU
-          rm -rf KernelSU-Next
-          echo "🔧 Setting up SukiSU Ultra with susfs..."
-          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
-          echo "Adding more manager support..."
-          cp -rf "ksu_more_manager.patch" KernelSU && cd KernelSU && patch -p1 -f < "ksu_more_manager.patch" && cd ..
-          echo "Done (KSU, MKSU, RKSU, Fork by backslashxx and SukiSU)"
+          bash managerpatch.sh
         fi
 
     - name: Build Kernel for ${{ matrix.rom_type }}
@@ -354,7 +349,7 @@ jobs:
       env:
         ROM_TYPE: ${{ matrix.rom_type == '' && 'AOSP+MIUI' || matrix.rom_type }}
         TELEGRAM_ACTION: update
-        CURRENT_STAGE: Capture build status
+        CURRENT_STAGE: Capturing build status
         PROGRESS_PERCENT: 80
       run: |
         python3 telegram_notify.py
