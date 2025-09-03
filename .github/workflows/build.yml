@@ -243,6 +243,7 @@ jobs:
         PROGRESS_PERCENT: 40
       working-directory: Kernel
       run: |
+        set -x
         python3 ${{ github.workspace }}/tg_notify.py
         echo "🛠️ Setting up build environment..."
         sudo apt-get update
