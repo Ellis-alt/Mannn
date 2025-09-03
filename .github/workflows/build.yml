@@ -137,8 +137,7 @@ jobs:
       id-token: write
     env:
       CODENAME: munch
-      # KERNEL_SOURCE_URL: https://github.com/UdayKumarChunduru/Realking_kernel_sm8250.git
-      KERNEL_SOURCE_URL: https://github.com/UdayKumarChunduru/Realking_Kernel.git
+      KERNEL_SOURCE_URL: https://github.com/UdayKumarChunduru/Realking_kernel_sm8250.git
       KERNEL_BRANCH: ${{ inputs.kernel_branch || github.event.inputs.kernel_branch || 'munch_susfs' }}
       clang: ${{ inputs.clang || github.event.inputs.clang || 'WeebX Stable' }}
       custom_clang_url: ${{ inputs.custom_clang_url || github.event.inputs.custom_clang_url || '' }}
@@ -177,9 +176,7 @@ jobs:
       run: |
         python3 tg_notify.py
         echo "Cloning branch $KERNEL_BRANCH"
-        # git clone --depth=1 --branch "$KERNEL_BRANCH" "$KERNEL_SOURCE_URL" Kernel
-        git clone --depth=1 --branch "$KERNEL_BRANCH" \
-        https://x-access-token:${{ secrets.GH_PAT }}@github.com/UdayKumarChunduru/Realking_Kernel.git Kernel
+        git clone --depth=1 --branch "$KERNEL_BRANCH" "$KERNEL_SOURCE_URL" Kernel
 
     - name: Process Release Configs
       id: release-config
@@ -309,7 +306,6 @@ jobs:
         echo "✅ ${{ env.clang }} Clang downloaded and extracted successfully"
 
         echo "Settingup Kernel Manager"
-        # bash nextpatch.sh
         bash managerpatch.sh
 
     - name: Build Kernel for ${{ matrix.rom_type }}
