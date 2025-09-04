@@ -29,6 +29,7 @@ export ARCH=arm64
 export SUBARCH=arm64
 export KBUILD_BUILD_USER="Uday"
 export KBUILD_BUILD_HOST="Github"
+export KBUILD_BUILD_TIMESTAMP="$(TZ=Asia/Kolkata date)"
 export KBUILD_COMPILER_STRING="$($DIR/clang/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 
 echo "🧹 Cleaning previous build..."
